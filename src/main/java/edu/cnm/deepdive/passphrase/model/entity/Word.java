@@ -3,6 +3,7 @@ package edu.cnm.deepdive.passphrase.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,7 +14,7 @@ import jakarta.persistence.Table;
 import org.springframework.lang.NonNull;
 
 @Entity
-@Table(name = "word")
+@JsonDeserialize()
 public class Word {
 
   @NonNull
@@ -21,10 +22,12 @@ public class Word {
   @Column(name = "word_id", updatable = false)
   @JsonIgnore
   private Long id;
-
+@NonNull
+@Column(name = "position", nullable = false, updatable = false)
+@JsonIgnore
 private int order;
   @NonNull
-  @Column(nullable = false, updatable = false)
+  @Column(name = "content", nullable = false, updatable = false)
   @JsonValue
   private String value;
 

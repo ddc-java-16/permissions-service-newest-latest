@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PassphraseRepository extends JpaRepository<Passphrase, Long> {
 
-
-  Optional<Passphrase> findByKey(UUID);
+  Optional<Passphrase> findByUserAndKey(User user, UUID key);
+  Optional<Passphrase> findByKey(UUID uuid);
   List<Passphrase> findAllByUserAndNameContainsOrderByNameAsc(User user, String nameFragment);
 
 }

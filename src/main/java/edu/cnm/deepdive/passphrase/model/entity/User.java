@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -40,9 +41,9 @@ public class User{
   private Long id;
 
   @NonNull
-  @Column(updatable = false, nullable = false, unique = true, columnDefinition = "UUID")
+  @Column(name = "external_key", updatable = false, nullable = false, unique = true, columnDefinition = "UUID")
   @JsonProperty(namespace = "id", access = Access.READ_ONLY)
-  private UUID Key;
+  private UUID key;
 
   @NonNull
   @CreationTimestamp
@@ -67,7 +68,7 @@ public class User{
   private String oauthKey;
 
   @NonNull
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy( "name ASC")
   @JsonIgnore
   private final List<Passphrase> passphrases = new LinkedList<>();
@@ -80,7 +81,7 @@ public class User{
 
   @NonNull
   public UUID getKey() {
-    return Key;
+    return key;
   }
 
 
@@ -117,5 +118,10 @@ public class User{
 
   public void setOauthKey(@NonNull String oauthKey) {
     this.oauthKey = oauthKey;
+  }
+
+  @PrePersist
+  private void generateKey() {
+    key = UUID.randomUUID();
   }
 }

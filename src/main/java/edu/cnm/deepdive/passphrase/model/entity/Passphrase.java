@@ -16,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Transient;
@@ -41,7 +42,7 @@ public class Passphrase {
   private Long id;
 
   @NonNull
-  @Column(updatable = false, nullable = false, unique = true)
+  @Column(name = "external_key", updatable = false, nullable = false, unique = true)
   @JsonProperty(value = "id", access = Access.READ_ONLY)
   private UUID key;
 
@@ -123,5 +124,8 @@ public class Passphrase {
     return words;
   }
 
-
+  @PrePersist
+  private void generateKey() {
+    key = UUID.randomUUID();
+  }
 }
