@@ -1,26 +1,23 @@
 package edu.cnm.deepdive.passphrase.model.entity;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -29,99 +26,96 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.lang.NonNull;
 
 @Entity
+@Table(name = "user_profile")
 @JsonInclude(Include.NON_NULL)
-@JsonPropertyOrder({"id", "created", "modified", "name"})
-public class Passphrase {
+public class User{
+
+
 
   @Id
   @NonNull
-  @Column(name = "column_id", updatable = false, nullable = false)
   @GeneratedValue
+  @Column(name = "user_profile_id", nullable = false, updatable = false)
   @JsonIgnore
   private Long id;
 
   @NonNull
-  @Column(updatable = false, nullable = false, unique = true)
-  @JsonProperty(value = "id", access = Access.READ_ONLY)
-  private UUID key;
+  @Column(updatable = false, nullable = false, unique = true, columnDefinition = "UUID")
+  @JsonProperty(namespace = "id", access = Access.READ_ONLY)
+  private UUID Key;
 
+  @NonNull
   @CreationTimestamp
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(updatable = false, nullable = false)
+  @Column(nullable = false, updatable = false)
   @JsonProperty(access = Access.READ_ONLY)
+
   private Instant created;
+
 
   @NonNull
   @UpdateTimestamp
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(nullable = false)
+  @Column(nullable = false, updatable = true)
+  @JsonProperty(access = Access.READ_ONLY)
   private Instant modified;
+
+  private String displayName;
   @NonNull
-  @Column(nullable = false)
-  private String name;
+  @Column(nullable = false, updatable = false, unique = true, length = 30)
+  @JsonIgnore
+  private String oauthKey;
 
   @NonNull
-  @ManyToOne(optional = false, fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false, unique = false)
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy( "name ASC")
   @JsonIgnore
-  private User user;
-@NonNull
-  @OneToMany(mappedBy = "passphrase", fetch = FetchType.EAGER,cascade = CascadeType.ALL, orphanRemoval = true)
-@OrderBy("order ASC")
-  private final List<Word> words = new LinkedList<>();
-  @Transient
-  private transient int length;
+  private final List<Passphrase> passphrases = new LinkedList<>();
 
   @NonNull
   public Long getId() {
     return id;
   }
 
+
   @NonNull
   public UUID getKey() {
-    return key;
+    return Key;
   }
 
+
+  @NonNull
   public Instant getCreated() {
     return created;
   }
+
 
   @NonNull
   public Instant getModified() {
     return modified;
   }
 
+
+
   @NonNull
-  public String getName() {
-    return name;
+  public List<Passphrase> getPassphrases() {
+    return passphrases;
   }
 
-  public void setName(@NonNull String name) {
-    this.name = name;
+  public String getDisplayName() {
+    return displayName;
   }
 
-  public int getLength() {
-    return length;
-  }
-
-  public void setLength(int length) {
-    this.length = length;
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
   @NonNull
-  public User getUser() {
-    return user;
+  public String getOauthKey() {
+    return oauthKey;
   }
 
-  public void setUser(@NonNull User user) {
-    this.user = user;
+  public void setOauthKey(@NonNull String oauthKey) {
+    this.oauthKey = oauthKey;
   }
-
-
-@NonNull
-  public List<Word> getWords() {
-    return words;
-  }
-
-
 }
