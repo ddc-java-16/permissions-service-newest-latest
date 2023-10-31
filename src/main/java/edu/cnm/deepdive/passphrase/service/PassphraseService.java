@@ -37,6 +37,9 @@ public class PassphraseService implements
   public Passphrase create(User user, Passphrase passphrase) {
     List<Word> words = passphrase.getWords();
     if (words.isEmpty()) {
+      if(passphrase.getLength() <= 0) {
+        throw new IllegalArgumentException(String.format("Invalid length: %d; most be positive.", passphrase.getLength()));
+      }
 provider.generate(passphrase.getLength())
     .stream()
     .map((str) -> {

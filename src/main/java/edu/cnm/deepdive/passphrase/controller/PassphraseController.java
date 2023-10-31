@@ -3,11 +3,16 @@ package edu.cnm.deepdive.passphrase.controller;
 import edu.cnm.deepdive.passphrase.model.entity.Passphrase;
 import edu.cnm.deepdive.passphrase.service.AbstractPassphraseService;
 import edu.cnm.deepdive.passphrase.service.AbstractUserService;
+import edu.cnm.deepdive.passphrase.service.PassphraseService;
+import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +46,14 @@ private AbstractPassphraseService passphraseService;
     return passphraseService.read(userService.getCurrentUser(), key);
   }
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public Passphrase post(@RequestBody Passphrase passphrase) {
-  return passphraseService.create(userService.getCurrentUser(), passphrase);
+  public ResponseEntity<Passphrase> post(@Valid @RequestBody Passphrase passphrase) {
+  Passphrase created = passphraseService.create(userService.getCurrentUser(), passphrase);
+  URI location = WebMvcLinkBuilder.linkTo(
+      WebMvcLinkBuilder.methodOn(PassphraseController.class).get(created.getKey())
+
+  ).toUri();
+  return ResponseEntity.created(location)
+      .body(created);
   }
 
   @DeleteMapping(value = "/{key}")
