@@ -71,7 +71,8 @@ public class Passphrase {
 @OrderBy("order ASC")
   private final List<Word> words = new LinkedList<>();
   @Transient
-  private transient int length;
+  @JsonProperty(access = Access.WRITE_ONLY)
+  private int length;
 
   @NonNull
   public Long getId() {

@@ -11,16 +11,12 @@ import java.io.IOException;
 public class WordDeserializer extends StdDeserializer<Word> {
 
 
+
+  public WordDeserializer() {
+    this((Class)null);
+  }
   protected WordDeserializer(Class<?> vc) {
-    super(vc);
-  }
-
-  protected WordDeserializer(JavaType valueType) {
-    super(valueType);
-  }
-
-  protected WordDeserializer(StdDeserializer<?> src) {
-    super(src);
+    super((Class<?>) null);
   }
 
   @Override
