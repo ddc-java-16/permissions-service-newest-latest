@@ -11,6 +11,8 @@ public interface PassphraseRepository extends JpaRepository<Passphrase, Long> {
 
   Optional<Passphrase> findByUserAndKey(User user, UUID key);
   Optional<Passphrase> findByKey(UUID uuid);
-  List<Passphrase> findAllByUserAndNameContainsOrderByNameAsc(User user, String nameFragment);
+
+
+  List<Passphrase> findAllByUserAndNameContainsIgnoreCaseOrderByNameAsc(User user, String nameFragment);
 
 }

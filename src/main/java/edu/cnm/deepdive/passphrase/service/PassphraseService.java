@@ -34,6 +34,11 @@ public class PassphraseService implements
   }
 
   @Override
+  public List<Passphrase> search(User user, String fragment) {
+    return repository.findAllByUserAndNameContainsIgnoreCaseOrderByNameAsc(user, fragment);
+  }
+
+  @Override
   public Passphrase create(User user, Passphrase passphrase) {
     List<Word> words = passphrase.getWords();
     if (words.isEmpty()) {
