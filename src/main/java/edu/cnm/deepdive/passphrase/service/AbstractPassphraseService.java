@@ -18,4 +18,10 @@ public interface AbstractPassphraseService {
   void delete(User user, UUID key);
 
   Passphrase update(User user, UUID key, Passphrase recieved);
+
+  String updateName(User user, UUID key, String recieved);
+  List<String> updateWords(User user, UUID key, List<String> received);
+
+
+  List<String> generate(int length);
 }
