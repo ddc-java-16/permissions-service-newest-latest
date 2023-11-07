@@ -5,8 +5,10 @@ import edu.cnm.deepdive.passphrase.service.AbstractPassphraseService;
 import edu.cnm.deepdive.passphrase.service.AbstractUserService;
 import edu.cnm.deepdive.passphrase.service.PassphraseService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -80,4 +82,16 @@ private AbstractPassphraseService passphraseService;
   public String putName(@PathVariable UUID key, @NotNull @NotBlank @RequestBody String name) {
   return passphraseService.updateName(userService.getCurrentUser(), key, name);
   }
+
+  @PutMapping(value = "/{key}/words", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<String> putWords(@PathVariable UUID key, @NotNull @NotBlank @Size @RequestBody List<String> words) {
+  return passphraseService.updateWords(userService.getCurrentUser(), key, words);
+
+  }
+
+  @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<String> generate(@Min(1)@RequestParam(defaultValue = "6") int length) {
+  return passphraseService.generate(length);
+  }
+
 }

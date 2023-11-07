@@ -82,7 +82,14 @@ provider.generate(passphrase.getLength())
             passphrase.setName(recieved.getName());
           }
           if (!recieved.getWords().isEmpty()) {
+            passphrase.getWords().forEach((word) -> word.setPassphrase(passphrase));
             passphrase.getWords().clear();
+            int counter = 0;
+            for(Word word : recieved.getWords()) {
+
+              word.setPassphrase(passphrase);
+              word.setOrder(counter++);
+            }
             passphrase.getWords().addAll(recieved.getWords());
 
           }
@@ -108,11 +115,13 @@ provider.generate(passphrase.getLength())
     return repository
         .findByUserAndKey(user, key)
         .map((passphrase) -> {
+          int[] order = new int[]{0};
           passphrase.getWords().clear();
           passphrase.getWords().addAll(received.stream().map((item) -> {
             Word word = new Word();
             word.setValue(item);
             word.setPassphrase(passphrase);
+            word.setOrder(order[0]++);
             return word;
           }).toList()
         );
