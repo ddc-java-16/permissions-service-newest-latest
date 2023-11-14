@@ -4,6 +4,7 @@ import edu.cnm.deepdive.passphrase.model.dao.AttachmentRepository;
 import edu.cnm.deepdive.passphrase.model.dao.PassphraseRepository;
 import edu.cnm.deepdive.passphrase.model.entity.Attachment;
 import edu.cnm.deepdive.passphrase.model.entity.User;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,8 @@ public class AttachmentService implements
   }
 
   @Override
-  public Resource readContent(@NonNull User user, @NonNull UUID passphraseKey, @NonNull UUID attachmentKey) {
+  public Resource readContent(@NonNull User user, @NonNull UUID passphraseKey, @NonNull UUID attachmentKey)
+      throws IOException {
     Attachment attachment = read(user, passphraseKey, attachmentKey);
     return service.retrieve(attachment.getStorageKey());
   }
