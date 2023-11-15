@@ -83,6 +83,11 @@ public class Passphrase {
   @OneToMany(mappedBy = "passphrase", fetch = FetchType.EAGER,cascade = CascadeType.ALL, orphanRemoval = true)
 @OrderBy("order ASC")
   private final List<Word> words = new LinkedList<>();
+
+  @OneToMany(mappedBy = "passphrase", fetch = FetchType.EAGER,
+  cascade = CascadeType.ALL)
+  @OrderBy("created DESC")
+  private List<Attachment> attachments = new LinkedList<>();
   @Transient
   @JsonProperty(access = Access.WRITE_ONLY)
   private int length;
@@ -141,5 +146,14 @@ public class Passphrase {
   @PrePersist
   private void generateKey() {
     key = UUID.randomUUID();
+  }
+
+  public List<Attachment> getAttachments() {
+    return attachments;
+  }
+
+  public void setAttachments(
+      List<Attachment> attachments) {
+    this.attachments = attachments;
   }
 }

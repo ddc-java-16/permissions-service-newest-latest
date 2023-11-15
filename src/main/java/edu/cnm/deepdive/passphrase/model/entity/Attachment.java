@@ -22,7 +22,7 @@ import org.springframework.lang.NonNull;
 public class Attachment {
   @NonNull
   @Column(name = "external_key", nullable = false, updatable = false)
-  @JsonProperty(access = Access.READ_ONLY)
+  @JsonProperty(value = "id", access = Access.READ_ONLY)
   private UUID key;
   @NonNull
   @Id
@@ -59,6 +59,7 @@ private String storageKey;
   @NonNull
   @JoinColumn(name = "passphrase_id", nullable = false, updatable = false)
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JsonIgnore
 private Passphrase passphrase;
 
   @NonNull

@@ -6,16 +6,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface StorageService {
 
-String store(MultipartFile file) throws IOException, MediaTypeException;
+String store(MultipartFile file) throws StorageException, MediaTypeException;
 
-Resource retrieve(String key) throws IOException;
+Resource retrieve(String key) throws StorageException;
 
-boolean delete(String key)  throws IOException, UnsupportedOperationException, SecurityException;
+boolean delete(String key)  throws StorageException, UnsupportedOperationException, SecurityException;
 
-
-record StorageReference (String filename, String reference) {
-
-}
 
 class MediaTypeException extends RuntimeException{
 
@@ -34,5 +30,23 @@ class MediaTypeException extends RuntimeException{
     super(cause);
   }
 }
+
+class StorageException extends RuntimeException{
+
+    public StorageException() {
+    }
+
+    public StorageException(String message) {
+      super(message);
+    }
+
+    public StorageException(String message, Throwable cause) {
+      super(message, cause);
+    }
+
+    public StorageException(Throwable cause) {
+      super(cause);
+    }
+  }
 
 }

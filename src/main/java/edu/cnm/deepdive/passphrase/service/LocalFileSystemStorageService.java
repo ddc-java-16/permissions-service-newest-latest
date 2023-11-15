@@ -4,6 +4,7 @@ import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration;
 import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration.FileNameProperties;
 import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration.FileNameProperties.TimestampProperties;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,45 +29,47 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.multipart.MultipartFile;
+
 @Service
 @Profile("service")
 public class LocalFileSystemStorageService implements
     StorageService {
-private static final String KEY_PATH_DELIMITER = FileSystems.getDefault().getSeparator();
-private static final String KEY_PATH_FORMAT = "%s";
-private static final String INVALID_MEDIA_FORMAT = "%s is not allowed in this storage service.";
 
-private final RandomGenerator rng;
-private final Path uploadDirectory;
-private final Pattern subdirectoryPattern;
-private final Set<String> whitelist;
-private final String filenameFormat;
-private final DateFormat formatter;
-private final List<MediaType> contentTypes;
-private final int randomizerLimit;
+  private static final String KEY_PATH_DELIMITER = FileSystems.getDefault().getSeparator();
+  private static final String INVALID_MEDIA_FORMAT = "%s is not allowed in this storage service.";
 
-@Autowired
-public LocalFileSystemStorageService(FileStorageConfiguration configuration, ApplicationHome home, RandomGenerator rng) {
-  this.rng = rng;
-  FileNameProperties fileNameProperties = configuration.getFilename();
-  TimestampProperties timestampProperties = fileNameProperties.getTimestamp();
-  String uploadPath = configuration.getDirectory();
-  uploadDirectory = configuration.isApplicationHome()
-      ? home.getDir().toPath().resolve(uploadPath)
-      : Path.of(uploadPath);
-  uploadDirectory.toFile().mkdirs();
-  subdirectoryPattern = configuration.getSubdirectoryPattern();
-  whitelist = configuration.getWhitelist();
-  contentTypes = whitelist.stream().map(MediaType::valueOf).collect(Collectors.toList());
-  filenameFormat = fileNameProperties.getFormat();
-  randomizerLimit = fileNameProperties.getRandomizerLimit();
-  formatter = new SimpleDateFormat(timestampProperties.getFormat());
-  formatter.setTimeZone(TimeZone.getTimeZone(timestampProperties.getTimeZone()));
-}
+  private final RandomGenerator rng;
+  private final Path uploadDirectory;
+  private final Pattern subdirectoryPattern;
+  private final Set<String> whitelist;
+  private final String filenameFormat;
+  private final DateFormat formatter;
+  private final int randomizerLimit;
+
+  @Autowired
+  public LocalFileSystemStorageService(FileStorageConfiguration configuration, ApplicationHome home,
+      RandomGenerator rng) {
+    this.rng = rng;
+    FileNameProperties fileNameProperties = configuration.getFilename();
+    TimestampProperties timestampProperties = fileNameProperties.getTimestamp();
+    String uploadPath = configuration.getDirectory();
+    uploadDirectory = configuration.isApplicationHome()
+        ? home.getDir().toPath().resolve(uploadPath)
+        : Path.of(uploadPath);
+    uploadDirectory.toFile().mkdirs();
+    subdirectoryPattern = configuration.getSubdirectoryPattern();
+    whitelist = configuration.getWhitelist();
+    filenameFormat = fileNameProperties.getFormat();
+    randomizerLimit = fileNameProperties.getRandomizerLimit();
+    formatter = new SimpleDateFormat(timestampProperties.getFormat());
+    formatter.setTimeZone(TimeZone.getTimeZone(timestampProperties.getTimeZone()));
+  }
+
   @Override
-  public String store(MultipartFile file) throws IOException, MediaTypeException {
-    if(!whitelist.contains(file.getContentType())) {
-      throw new MediaTypeException(String.format("Content Type %s not supported for storage.", file.getContentType()))
+  public String store(MultipartFile file) throws StorageException, MediaTypeException {
+    if (!whitelist.contains(file.getContentType())) {
+      throw new MediaTypeException(
+          String.format("Content Type %s not supported for storage.", file.getContentType()));
     }
     String originalFilename = file.getOriginalFilename();
     String newFilename = String.format(
@@ -78,45 +81,56 @@ public LocalFileSystemStorageService(FileStorageConfiguration configuration, App
     String subdirectory = getSubdirectory(newFilename);
     Path resolvedPath = uploadDirectory.resolve(subdirectory);
     resolvedPath.toFile().mkdirs();
-    Files.copy(file.getInputStream(), resolvedPath.resolve(newFilename));
+    try {
+      Files.copy(file.getInputStream(), resolvedPath.resolve(newFilename));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return newFilename;
   }
 
   @Override
-  public Resource retrieve(String key) throws IOException {
-    return new UrlResource(resolve(key).toUri());
+  public Resource retrieve(String key) throws StorageException {
+    try {
+      return new UrlResource(resolve(key).toUri());
+    } catch (MalformedURLException e) {
+      throw new StorageException(e);
+    }
   }
 
   @Override
   public boolean delete(String key)
-      throws IOException, UnsupportedOperationException, SecurityException {
+      throws StorageException, UnsupportedOperationException, SecurityException {
     return false;
   }
+
   @NonNull
   private String getExtension(@NonNull String filename) {
-  int position = filename.lastIndexOf('.');
-  return (position >= 0)
-      ? filename.substring(position + 1)
-      : "";
+    int position = filename.lastIndexOf('.');
+    return (position >= 0)
+        ? filename.substring(position + 1)
+        : "";
 
 
   }
+
   @NonNull
   private String getSubdirectory(@NonNull String filename) {
-  String path;
-  Matcher matcher = subdirectoryPattern.matcher(filename);
-  if (matcher.matches()) {
-    path = IntStream.rangeClosed(1, matcher.groupCount())
-        .mapToObj(matcher::group)
-        .collect(Collectors.joining(KEY_PATH_DELIMITER));
-  } else {
-    path = "";
+    String path;
+    Matcher matcher = subdirectoryPattern.matcher(filename);
+    if (matcher.matches()) {
+      path = IntStream.rangeClosed(1, matcher.groupCount())
+          .mapToObj(matcher::group)
+          .collect(Collectors.joining(KEY_PATH_DELIMITER));
+    } else {
+      path = "";
 
+    }
+    return path;
   }
-  return path;
-  }
+
   @NonNull
   private Path resolve(@NonNull String key) {
-  return uploadDirectory.resolve(getSubdirectory(key)).resolve(key);
+    return uploadDirectory.resolve(getSubdirectory(key)).resolve(key);
   }
 }

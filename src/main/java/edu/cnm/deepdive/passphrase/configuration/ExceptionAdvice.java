@@ -1,5 +1,6 @@
 package edu.cnm.deepdive.passphrase.configuration;
 
+import edu.cnm.deepdive.passphrase.service.StorageService.MediaTypeException;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
@@ -26,5 +27,9 @@ public class ExceptionAdvice {
   public void sqlConstraintViolation() {
 
   }
+@ExceptionHandler (MediaTypeException)
+  @ResponseStatus(value = HttpStatus.UNSUPPORTED_MEDIA_TYPE, reason = "Upload cntent type not supported.")
+  public void mediaTypeNotInWhiteList(){
 
+}
 }
